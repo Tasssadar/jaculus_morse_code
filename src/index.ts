@@ -1,7 +1,10 @@
 import * as gpio from "gpio"
 
+import * as kv from "keyvalue"
+
 // layout.ts vygeneruje web designer
 import Layout from "./layout.js"
+import * as gridui from "gridui"
 
 const SEQ_WORD_SPACE = -1
 const SEQ_SENTENCE_SPACE = -2
@@ -157,6 +160,18 @@ async function main() {
     output(false);
 
     Layout.begin("FrantaFlinta", "Morseovak", builder => {
+        const ns = kv.open("morse")
+
+        builder.message.text(ns.getString("message") || "")
+        for(const key in builder) {
+            if(key.endsWith("Ms") || key.endsWith("Coef")) {
+                const saved = ns.getNumber(key.substring(0, 15))
+                if(saved !== null) {
+                    ;(builder[key] as gridui.builder.Slider).value(saved)
+                }
+            }
+        }
+
         builder.message.onChanged((msg) => { 
             const error = validateMessage(msg.text)
             Layout.messageError.text = error || ""
@@ -165,6 +180,16 @@ async function main() {
         builder.setBtn.onPress(() => {
             gSequence = prepareSequence(Layout.message.text)
             resetIndexes()
+
+            const ns = kv.open("morse")
+            ns.set("message", Layout.message.text)
+            for(const key in Layout) {
+                if(key.endsWith("Ms") || key.endsWith("Coef")) {
+                    const slider = Layout[key] as gridui.widget.Slider
+                    ns.set(key.substring(0, 15), slider.value)
+                }
+            }
+            ns.commit();
         })
     })
 
@@ -181,4 +206,4 @@ async function main() {
     }
 }
 
-main()
+main().catch(err => console.error(err))
