@@ -10,25 +10,6 @@ const SEQ_WORD_SPACE = -1
 const SEQ_SENTENCE_SPACE = -2
 
 const MORSE_CODE = [
-    // Start at ascii code 48
-    "-----", //0
-    ".----", //1
-    "..---", //2
-    "...--", //3
-    "....-", //4
-    ".....", //5
-    "-....", //6
-    "--...", //7
-    "---..", //8
-    "----.", //9
-    // Some symbols in asciitable
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
-    "",
     ".-",   //A - ascii code 65
     "-...", //B
     "-.-.", //C
@@ -68,7 +49,7 @@ function validateMessage(text: string): string | null {
         const c = text.charCodeAt(i)
         if(c == 32 || c == 44 || c == 46) // space, comma, dot
             continue
-        const morseIdx = c - 48;
+        const morseIdx = c - 65;
         if(morseIdx < 0 || morseIdx >= MORSE_CODE.length) {
             return `Nelze zakodovat znak na pozici ${i}: ${text.charAt(i)}`
         }
@@ -91,7 +72,7 @@ function prepareSequence(text: string): number[] {
             continue
         }
 
-        const morseIdx = c - 48;
+        const morseIdx = c - 65;
         if(morseIdx < 0 || morseIdx >= MORSE_CODE.length) {
             continue
         }
@@ -103,7 +84,7 @@ function prepareSequence(text: string): number[] {
 
 function output(on: boolean) {
     gpio.write(15, on ? 1 : 0)
-    gpio.write(10, on ? 1 : 0)
+    gpio.write(14, on ? 1 : 0)
     gpio.write(21, on ? 1 : 0)
 }
 
@@ -154,7 +135,7 @@ async function sequenceIter() {
 
 async function main() {
     gpio.pinMode(15, gpio.PinMode.OUTPUT)
-    gpio.pinMode(10, gpio.PinMode.OUTPUT)
+    gpio.pinMode(14, gpio.PinMode.OUTPUT)
     gpio.pinMode(21, gpio.PinMode.OUTPUT)
 
     output(false);
@@ -190,6 +171,17 @@ async function main() {
                 }
             }
             ns.commit();
+        })
+
+        builder.reset.onPress(() => {
+            Layout.message.text = ""
+            Layout.messageError.text = ""
+            Layout.dotMs.value = 300
+            Layout.dashCoef.value = 3
+            Layout.spaceSymbolCoef.value = 1
+            Layout.spaceLetterCoef.value = 3
+            Layout.spaceWordCoef.value = 7
+            Layout.spaceSentenceCoef.value = 7
         })
     })
 
