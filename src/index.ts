@@ -86,6 +86,10 @@ function output(on: boolean) {
     gpio.write(15, on ? 1 : 0)
     gpio.write(14, on ? 1 : 0)
     gpio.write(21, on ? 1 : 0)
+
+    if(Layout.Led1) {
+        Layout.Led1.on = on
+    }
 }
 
 let gSequence: number[] = []
@@ -187,6 +191,8 @@ async function main() {
 
     gSequence = prepareSequence(Layout.message.text)
     resetIndexes()
+
+    console.log("Ready.")
 
     while(true) {
         if(gSequence.length === 0) {
